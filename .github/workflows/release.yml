@@ -46,9 +46,7 @@ jobs:
 
       # 7. Build the Android App Bundle (AAB)
       - name: Build Android App Bundle
-        run: flutter build appbundle --release \
-          --build-name=${{ github.ref_name }} \
-          --build-number=${{ github.run_number }}
+        run: flutter build appbundle --release --build-name=${{ github.ref_name }} --build-number=${{ github.run_number }}
         env:
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           ALIAS_PASSWORD: ${{ secrets.ALIAS_PASSWORD }}
