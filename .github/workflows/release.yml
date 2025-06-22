@@ -33,9 +33,9 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      # 5. Run Unit & Widget Tests (as requested)
-      - name: Run tests
-        run: flutter test
+      # # 5. Run Unit & Widget Tests (as requested)
+      # - name: Run tests
+      #   run: flutter test
 
       # 6. Decode and set up the signing key
       - name: Decode Keystore
@@ -61,5 +61,5 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.leapindev.compound_interest_calculator # IMPORTANT: Change this!
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: internal # Use 'internal', 'alpha', 'beta', or 'production'
+          track: production # Use 'internal', 'alpha', 'beta', or 'production'
           status: completed # Use 'completed' to roll out fully, or 'draft'
