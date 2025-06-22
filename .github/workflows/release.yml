@@ -60,4 +60,4 @@ jobs:
           packageName: com.leapindev.compound_interest_calculator # IMPORTANT: Change this!
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           track: production # Use 'internal', 'alpha', 'beta', or 'production'
-          status: completed # Use 'completed' to roll out fully, or 'draft'
+          status: internal # Use 'completed' to roll out fully, or 'draft'

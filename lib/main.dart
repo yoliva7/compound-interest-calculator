@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:math';
 import 'package:intl/intl.dart';
 import 'dart:ui';
 
@@ -53,11 +54,19 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   final _principalController = TextEditingController(text: '10000');
   final _rateController = TextEditingController(text: '7');
   final _yearsController = TextEditingController(text: '30');
-  final _monthlyContributionController = TextEditingController(text: '500');
+  final _contributionController = TextEditingController(text: '500');
   final _stopYearController = TextEditingController(text: '20');
 
-  // New state for stopping contributions
+  // State for stopping contributions
   bool _stopContributionsEnabled = true;
+
+  // New state for contribution frequency
+  String _contributionFrequency = 'Monthly';
+  final List<String> _contributionFrequencyOptions = [
+    'Monthly',
+    'Quarterly',
+    'Annually',
+  ];
 
   // Dropdown value for compounding frequency
   String _compoundingFrequency = 'Annually';
@@ -89,9 +98,23 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       final double annualRate =
           (double.tryParse(_rateController.text) ?? 0) / 100;
       final int years = int.tryParse(_yearsController.text) ?? 0;
-      final double monthlyContribution =
-          double.tryParse(_monthlyContributionController.text) ?? 0;
+      final double contributionAmount =
+          double.tryParse(_contributionController.text) ?? 0;
       final int stopYear = int.tryParse(_stopYearController.text) ?? years;
+
+      // Determine contribution interval in months
+      final int contributionInterval;
+      switch (_contributionFrequency) {
+        case 'Quarterly':
+          contributionInterval = 3;
+          break;
+        case 'Annually':
+          contributionInterval = 12;
+          break;
+        case 'Monthly':
+        default:
+          contributionInterval = 1;
+      }
 
       List<FlSpot> interestDataPoints = [FlSpot(0, principal)];
       List<FlSpot> contributionDataPoints = [FlSpot(0, principal)];
@@ -105,11 +128,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         // Add interest for the month
         currentBalance += currentBalance * monthlyRate;
 
-        // Check if we should add contribution for the current month
         final int currentYear = (m / 12).ceil();
-        if (!_stopContributionsEnabled || currentYear <= stopYear) {
-          currentBalance += monthlyContribution;
-          totalContributionsSoFar += monthlyContribution;
+        // Check if a contribution should be made this month
+        if (m % contributionInterval == 0 &&
+            (!_stopContributionsEnabled || currentYear <= stopYear)) {
+          currentBalance += contributionAmount;
+          totalContributionsSoFar += contributionAmount;
         }
 
         // Add a data point at the end of each year
@@ -227,10 +251,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             ),
             const SizedBox(height: 16),
             _buildTextField(
-              controller: _monthlyContributionController,
-              label: 'Monthly Contribution',
+              controller: _contributionController,
+              label: 'Contribution Amount',
               icon: Icons.add_card,
             ),
+            const SizedBox(height: 16),
+            _buildContributionFrequencyDropdown(),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -251,8 +277,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            _buildDropdown(),
             const SizedBox(height: 16),
             _buildStopContributionControl(),
           ],
@@ -583,15 +607,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
-  Widget _buildDropdown() {
+  Widget _buildContributionFrequencyDropdown() {
     return DropdownButtonFormField<String>(
-      value: _compoundingFrequency,
+      value: _contributionFrequency,
       dropdownColor: const Color(0xFF2C1A3C),
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
-        labelText: 'Compounding Frequency',
+        labelText: 'Contribution Frequency',
         labelStyle: const TextStyle(color: Colors.white54),
-        prefixIcon: const Icon(Icons.sync_alt, color: Colors.white54),
+        prefixIcon: const Icon(
+          Icons.replay_circle_filled,
+          color: Colors.white54,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.white24),
@@ -601,24 +628,23 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           borderSide: const BorderSide(color: Colors.purpleAccent),
         ),
       ),
-      items: _compoundingOptions
+      items: _contributionFrequencyOptions
           .map(
             (String value) =>
                 DropdownMenuItem<String>(value: value, child: Text(value)),
           )
           .toList(),
       onChanged: (newValue) =>
-          setState(() => _compoundingFrequency = newValue!),
+          setState(() => _contributionFrequency = newValue!),
     );
   }
 
-  // --- CLEANUP ---
   @override
   void dispose() {
     _principalController.dispose();
     _rateController.dispose();
     _yearsController.dispose();
-    _monthlyContributionController.dispose();
+    _contributionController.dispose();
     _stopYearController.dispose();
     super.dispose();
   }
